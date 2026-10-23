@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="A 35-minute plain-English warm-up on probability and Bayes' rule for Statistical Learning.">
+<style>[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Bayes From Zero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,500;1,500&display=swap">
+<style>
+/* Layout: clinic-brochure rhythm — white page, big inset electric-blue / black panels, white rounded cards on top. Single committed light look. */
+:root{
+  color-scheme:light;
+  --blue:#2451ff; --blue-deep:#1638d8; --violet:#a540f5; --violet-2:#6f3cf2; --cyan:#33d4ff;
+  --ink:#0e0f14; --ink-2:#4b5060; --grey:#f1f3f7; --line:#e2e6ee; --white:#ffffff;
+  --pink:#f7d3cb; --wine:#9e2449; --green:#22b45f;
+  --display:"Onest", "Helvetica Neue", Arial, sans-serif;
+  --math:"STIX Two Text", "Times New Roman", serif;
+  --r-xl:44px; --r-l:28px; --r-m:20px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--white);color:var(--ink);font:400 17px/1.6 var(--display);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.035em;line-height:1.02}
+h2{font-size:clamp(34px,5.4vw,64px);font-weight:700}
+h3{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+p{margin:0}
+a{color:inherit}
+.m{font-family:var(--math);font-style:italic;font-size:1.06em;white-space:nowrap}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-family:var(--math);font-style:italic;line-height:1.15;margin:0 .15em}
+.frac>span:first-child{border-bottom:1.5px solid currentColor;padding:0 .2em}
+.formula{font-family:var(--math);font-style:italic;font-size:clamp(20px,2.6vw,28px);line-height:1.5;padding:22px 24px;border-radius:var(--r-m);background:var(--grey);overflow-x:auto;text-align:center}
+.formula small{display:block;font-family:var(--display);font-style:normal;font-size:14px;color:var(--ink-2);margin-top:6px}
+
+/* top bar */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--grey);border-radius:99px;padding:8px 8px 8px 18px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:-.02em}
+.logo svg{width:26px;height:26px}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:8px 14px;font-size:13px;font-weight:600;background:var(--white);color:var(--ink);text-decoration:none;border:1.5px solid transparent}
+.pill.solid{background:var(--blue);color:var(--white)}
+.pill.ghost{background:transparent;border-color:currentColor}
+.pill:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+
+/* panels */
+.panel{border-radius:var(--r-xl);padding-block:clamp(28px,5vw,64px);padding-inline:clamp(18px,4.5vw,64px);display:flex;flex-direction:column;gap:28px;position:relative;overflow:hidden}
+.panel.blue{background:var(--blue);color:var(--white)}
+.panel.black{background:var(--ink);color:var(--white)}
+.panel.plain{background:var(--white);padding-inline:clamp(4px,2vw,24px)}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
+.lead{font-size:clamp(18px,2vw,21px);max-width:60ch}
+.head{display:flex;flex-direction:column;gap:14px}
+.part-tag{display:inline-flex;align-self:flex-start;gap:8px;align-items:center;font-size:13px;font-weight:600;padding:6px 12px;border-radius:99px;background:var(--grey);color:var(--ink)}
+.blue .part-tag,.black .part-tag{background:rgba(255,255,255,.14);color:var(--white)}
+
+/* cards */
+.card{background:var(--white);color:var(--ink);border-radius:var(--r-l);padding:clamp(18px,3vw,30px);display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.grey{background:var(--grey)}
+.card.violet{background:linear-gradient(150deg,var(--violet),var(--violet-2));color:var(--white)}
+.card.bluecard{background:var(--blue);color:var(--white)}
+.card.inkcard{background:var(--ink);color:var(--white)}
+.card p+p{margin-top:2px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.text{max-width:66ch;display:flex;flex-direction:column;gap:14px}
+.text ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.note{font-size:15px;color:var(--ink-2)}
+.blue .note,.black .note{color:rgba(255,255,255,.75)}
+.warn{border-radius:var(--r-m);padding:16px 18px;background:#fff1d6;color:#5a3c00;font-size:16px}
+.icon{width:54px;height:54px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:28px;align-items:end;min-height:0}
+.hero h1{font-size:clamp(58px,11vw,150px);font-weight:800;letter-spacing:-.055em;line-height:.9}
+.hero .lead{margin-top:20px}
+.hero-card{position:relative;display:flex;flex-direction:column;gap:12px}
+.chip{position:absolute;display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:99px;background:rgba(255,255,255,.22);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:var(--white);font-weight:700;font-size:18px}
+.chip svg{width:26px;height:26px}
+.chip.a{top:-22px;right:18px}
+.chip.b{bottom:-20px;left:-10px}
+.hero-stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px}
+.hero-stats .pill{background:rgba(255,255,255,.16);color:var(--white)}
+
+/* big numeral */
+.numeral{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+.numeral .big{font-size:clamp(150px,26vw,330px);font-weight:800;line-height:.78;letter-spacing:-.07em}
+.numeral h2{font-size:clamp(30px,4.6vw,54px);text-align:right}
+.toc{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.toc a{background:var(--white);color:var(--ink);border-radius:var(--r-m);padding:18px;text-decoration:none;display:flex;flex-direction:column;gap:10px;min-height:170px;transition:transform .2s}
+.toc a:hover{transform:translateY(-3px)}
+@media (prefers-reduced-motion:reduce){.toc a{transition:none}.toc a:hover{transform:none}}
+.toc b{font-size:16px;line-height:1.2;letter-spacing:-.01em}
+.toc span{font-size:13px;color:var(--ink-2);margin-top:auto}
+.toc .icon{width:40px;height:40px}
+
+/* table */
+.tablebox{overflow-x:auto;border-radius:var(--r-m)}
+table{border-collapse:collapse;width:100%;min-width:440px;font-variant-numeric:tabular-nums}
+th,td{padding:14px 16px;text-align:center;border-bottom:1px solid var(--line)}
+th{font-size:14px;font-weight:600;color:var(--ink-2)}
+td:first-child,th:first-child{text-align:left;font-weight:600;color:var(--ink)}
+td.hl{background:#e7ecff;color:var(--blue-deep);font-weight:700;border-radius:10px}
+tr.total td{color:var(--ink-2);font-weight:600;border-bottom:0}
+
+/* 1000 people */
+.people{display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:stretch}
+.bignum{font-size:clamp(90px,14vw,170px);font-weight:800;letter-spacing:-.06em;line-height:.85}
+.flow{display:flex;flex-direction:column;gap:6px;font-size:16px}
+.flow b{font-size:34px;letter-spacing:-.03em;line-height:1}
+
+/* distribution tiles */
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.tile{border-radius:var(--r-l);padding:22px;display:flex;flex-direction:column;gap:10px;min-height:250px;min-width:0}
+.tile .lbl{display:inline-flex;align-self:flex-start;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;background:rgba(14,15,20,.85);color:var(--white)}
+.tile .icon{margin-top:auto;align-self:flex-end;width:64px;height:64px}
+.t-pink{background:var(--pink)}
+.t-ink{background:var(--ink);color:var(--white)}
+.t-ink .lbl,.t-wine .lbl,.t-blue .lbl,.t-violet .lbl{background:rgba(255,255,255,.2)}
+.t-blue{background:linear-gradient(160deg,#3cb6f5,#1f6fe0);color:var(--white)}
+.t-grey{background:var(--grey)}
+.t-wine{background:var(--wine);color:var(--white)}
+.t-violet{background:linear-gradient(150deg,var(--violet),var(--violet-2));color:var(--white)}
+
+/* widget */
+.widget{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;align-items:stretch}
+.bars{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:end;height:240px;padding-top:28px}
+.barcol{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;height:100%}
+.barfill{width:100%;border-radius:14px 14px 6px 6px;background:linear-gradient(180deg,var(--cyan),var(--blue));min-height:3px;transition:height .35s ease;position:relative}
+.barfill.top{background:linear-gradient(180deg,#c86bff,var(--violet-2))}
+@media (prefers-reduced-motion:reduce){.barfill{transition:none}}
+.barval{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.barx{font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+button{font:600 15px var(--display);border:0;border-radius:99px;padding:12px 18px;cursor:pointer}
+.b-water{background:var(--blue);color:var(--white)}
+.b-land{background:var(--ink);color:var(--white)}
+.b-reset{background:var(--grey);color:var(--ink)}
+.datarow{display:flex;gap:6px;flex-wrap:wrap;min-height:34px}
+.tok{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px}
+.tok.W{background:var(--blue);color:var(--white)}
+.tok.L{background:#c9a26b;color:var(--white)}
+.readout{font-size:16px;display:flex;flex-direction:column;gap:6px}
+.readout b{font-variant-numeric:tabular-nums}
+
+/* parabola */
+.xy{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:stretch}
+.xy svg{width:100%;height:auto;max-width:100%}
+
+/* quiz */
+details{background:var(--grey);border-radius:var(--r-m);padding:18px 20px}
+summary{cursor:pointer;font-weight:600;font-size:18px;list-style:none;display:flex;justify-content:space-between;gap:12px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"Show answer";flex-shrink:0;font-size:13px;font-weight:600;background:var(--blue);color:var(--white);padding:6px 12px;border-radius:99px;align-self:flex-start}
+details[open] summary::after{content:"Hide";background:var(--ink)}
+details .ans{margin-top:14px;display:flex;flex-direction:column;gap:8px;max-width:66ch}
+.quiz{display:flex;flex-direction:column;gap:10px}
+
+/* glossary */
+.gloss{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.gloss div{background:rgba(255,255,255,.07);border-radius:var(--r-m);padding:18px;display:flex;flex-direction:column;gap:6px}
+.gloss b{font-size:18px}
+.gloss span{color:rgba(255,255,255,.78);font-size:15px}
+
+.end{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.end h2{max-width:14ch}
+.cta{display:inline-flex;gap:8px;align-items:center;background:var(--white);color:var(--blue);font-weight:700;padding:16px 24px;border-radius:99px;text-decoration:none;font-size:17px}
+
+@media (max-width:900px){
+  .hero,.widget,.people,.xy{grid-template-columns:1fr}
+  .toc{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3,.g4,.tiles,.gloss{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .chip.b{left:10px}
+}
+@media (max-width:560px){
+  .g2,.g3,.g4,.tiles,.gloss{grid-template-columns:1fr}
+  .numeral{grid-template-columns:1fr}
+  .numeral h2{text-align:left}
+  .toc a{min-height:130px}
+  .tile{min-height:0}
+  .bars{height:200px;gap:6px}
+  .bar .pills .pill:not(.solid){display:none}
+}
+</style>
+
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gr" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2451ff"/><stop offset=".55" stop-color="#2f8dff"/><stop offset="1" stop-color="#33d4ff"/>
+    </linearGradient>
+    <linearGradient id="grw" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#9fe9ff"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <nav class="bar" aria-label="Page">
+    <span class="logo">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" stroke="url(#gr)" stroke-width="2.6" stroke-linejoin="round"/></svg>
+      Stat Learning
+    </span>
+    <span class="pills">
+      <span class="pill">≈ 35 min</span>
+      <span class="pill">Before Day 1</span>
+      <a class="pill solid" href="#p1">Start reading</a>
+    </span>
+  </nav>
+
+  <!-- HERO -->
+  <section class="panel blue">
+    <div class="hero">
+      <div>
+        <span class="eyebrow">Statistical Learning · warm-up reading</span>
+        <h1>Bayes<br>from zero</h1>
+        <p class="lead">The ideas the whole course is built on, in plain English. Read it slowly, try the small checks, and tomorrow's slides will start to make sense.</p>
+        <div class="hero-stats">
+          <span class="pill">8 short parts</span>
+          <span class="pill">1 toy to play with</span>
+          <span class="pill">5 self-checks</span>
+        </div>
+      </div>
+      <div class="hero-card">
+        <span class="chip a"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" stroke="url(#grw)" stroke-width="2.6" stroke-linejoin="round"/></svg>+1 data point</span>
+        <div class="card">
+          <span class="eyebrow" style="color:var(--ink-2)">The one idea of this course</span>
+          <p style="font-family:var(--math);font-style:italic;font-size:clamp(26px,3.4vw,38px);line-height:1.25">posterior ∝<br>likelihood × prior</p>
+          <p class="note">What you believe after the data = what the data says × what you believed before. Every chapter repeats this.</p>
+        </div>
+        <span class="chip b"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="url(#grw)" stroke-width="2.4"/><path d="M4 12h16M12 4c3 3 3 13 0 16M12 4c-3 3-3 13 0 16" stroke="url(#grw)" stroke-width="2"/></svg>update</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOC as big numeral -->
+  <section class="panel blue" aria-label="Contents">
+    <div class="numeral">
+      <span class="big" aria-hidden="true">8</span>
+      <h2>— short parts between you and Day 1</h2>
+    </div>
+    <div class="toc">
+      <a href="#p1"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="url(#gr)" stroke-width="2"/><path d="M4 12h16M12 4c3 3 3 13 0 16M12 4c-3 3-3 13 0 16" stroke="url(#gr)" stroke-width="1.6"/></svg><b>What this course is about</b><span>3 min</span></a>
+      <a href="#p2"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="url(#gr)" stroke-width="2"/><circle cx="12" cy="12" r="4.5" stroke="url(#gr)" stroke-width="1.6"/></svg><b>Probability: a number for “how sure”</b><span>4 min</span></a>
+      <a href="#p3"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="3" stroke="url(#gr)" stroke-width="2"/><path d="m4.5 7.5 7.5 6 7.5-6" stroke="url(#gr)" stroke-width="1.8" stroke-linejoin="round"/></svg><b>Joint, marginal, conditional</b><span>7 min</span></a>
+      <a href="#p4"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.5 19 6v5.5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" stroke="url(#gr)" stroke-width="2" stroke-linejoin="round"/><path d="M12 9v6M9 12h6" stroke="url(#gr)" stroke-width="2" stroke-linecap="round"/></svg><b>Bayes' rule</b><span>8 min</span></a>
+      <a href="#p5"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 19c3 0 4-12 9-12s6 12 9 12" stroke="url(#gr)" stroke-width="2" stroke-linecap="round"/><path d="M3 20.5h18" stroke="url(#gr)" stroke-width="1.6" stroke-linecap="round"/></svg><b>Random variables and distributions</b><span>5 min</span></a>
+      <a href="#p6"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5c2 9 5 12 8 12s6-3 8-12" stroke="url(#gr)" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.6" fill="url(#gr)"/></svg><b>Uncorrelated is not independent</b><span>2 min</span></a>
+      <a href="#p7"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.1-5" stroke="url(#gr)" stroke-width="2" stroke-linecap="round"/><path d="M17.5 3.5v4h-4" stroke="url(#gr)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><b>The Bayesian recipe (with a toy)</b><span>7 min</span></a>
+      <a href="#p8"><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="url(#gr)" stroke-width="2"/><path d="m8.5 12.3 2.4 2.4 4.8-5" stroke="url(#gr)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Check yourself</b><span>4 min</span></a>
+    </div>
+  </section>
+
+  <!-- PART 1 -->
+  <section class="panel plain" id="p1">
+    <div class="head">
+      <span class="part-tag">Part 1 · 3 min</span>
+      <h2>What is statistical learning?</h2>
+    </div>
+    <div class="text">
+      <p class="lead">Statistical learning means using data to guess something you cannot see directly, and also saying how sure you are about that guess.</p>
+      <p>Some examples from your course: Is this email spam? What is the next word in a sentence? Will this student pass? How much of the Earth is covered by water?</p>
+      <p>Your course does this the <b>Bayesian</b> way. You start with a belief. You see some data. You update the belief. Coins, dice, spam filters, Gaussians and regression all repeat this one move. Once it clicks, the course becomes much easier.</p>
+      <p>The first lecture opened with a game. Throw an inflatable globe, catch it, and look at where your right index finger lands: <b>W</b>ater or <b>L</b>and. Do it many times. From the results, guess the share of the Earth that is water. We will play this game ourselves in Part 7.</p>
+    </div>
+    <div class="grid g3">
+      <div class="card bluecard"><span class="eyebrow">Before the data</span><h3>Prior</h3><p>What you believe before looking. “I think water is maybe half of the Earth.”</p></div>
+      <div class="card violet"><span class="eyebrow">From the data</span><h3>Likelihood</h3><p>How well each possible answer explains what you saw. “If water were 90%, getting so much land would be strange.”</p></div>
+      <div class="card grey"><span class="eyebrow" style="color:var(--ink-2)">After the data</span><h3>Posterior</h3><p>Your updated belief. Prior and likelihood combined.</p></div>
+    </div>
+  </section>
+
+  <!-- PART 2 -->
+  <section class="panel plain" id="p2">
+    <div class="head">
+      <span class="part-tag">Part 2 · 4 min</span>
+      <h2>Probability is a number for “how sure”</h2>
+    </div>
+    <div class="grid g2">
+      <div class="card grey">
+        <h3>Three basic rules</h3>
+        <div class="text">
+          <ul>
+            <li>A probability is a number from <b>0</b> (impossible) to <b>1</b> (certain).</li>
+            <li>All possible outcomes together add up to 1. A fair die has 6 sides, so each side gets <span class="m">1/6</span>.</li>
+            <li>“Not A” is the rest: <span class="m">p(not A) = 1 − p(A)</span>. If rain is 0.3, no rain is 0.7.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card grey">
+        <h3>How to read the symbols</h3>
+        <div class="text">
+          <ul>
+            <li><span class="m">p(A)</span>: the probability that A happens.</li>
+            <li><span class="m">p(A, B)</span>: the probability that A <b>and</b> B both happen.</li>
+            <li><span class="m">p(A | B)</span>: the probability of A <b>given</b> B. Read the bar “|” as “if we already know that”.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="grid g2">
+      <div class="card inkcard"><span class="eyebrow">View 1</span><h3>Frequentist</h3><p>“p(heads) = 0.5” means: if you flip the coin very many times, about half the flips are heads. Probability is a long-run frequency.</p></div>
+      <div class="card bluecard"><span class="eyebrow">View 2 · this course</span><h3>Bayesian</h3><p>“p(heads) = 0.5” means: I am equally unsure about heads and tails for the next flip. Probability measures uncertainty. It also works for things that happen only once, like one election.</p></div>
+    </div>
+  </section>
+
+  <!-- PART 3 -->
+  <section class="panel black" id="p3">
+    <div class="head">
+      <span class="part-tag">Part 3 · 7 min</span>
+      <h2>Joint, marginal, conditional</h2>
+      <p class="lead">These three words come up in every lecture. One table explains all of them. We looked at 100 emails and counted two things: is it spam, and does it contain the word “free”?</p>
+    </div>
+    <div class="card">
+      <div class="tablebox">
+        <table>
+          <thead><tr><th></th><th>has “free”</th><th>no “free”</th><th>total</th></tr></thead>
+          <tbody>
+            <tr><td>spam</td><td class="hl">30</td><td>10</td><td>40</td></tr>
+            <tr><td>not spam</td><td>5</td><td>55</td><td>60</td></tr>
+            <tr class="total"><td>total</td><td>35</td><td>65</td><td>100</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="grid g3">
+      <div class="card"><span class="eyebrow" style="color:var(--ink-2)">One cell</span><h3>Joint</h3><p>Both things at once. Spam <b>and</b> “free”:</p><p class="m">p(spam, free) = 30/100 = 0.30</p></div>
+      <div class="card"><span class="eyebrow" style="color:var(--ink-2)">One total</span><h3>Marginal</h3><p>Forget the other variable. Add up the column. This is the <b>sum rule</b>:</p><p class="m">p(free) = 0.30 + 0.05 = 0.35</p></div>
+      <div class="card"><span class="eyebrow" style="color:var(--ink-2)">Zoom in, then count</span><h3>Conditional</h3><p>Look only at emails with “free” (35 of them). How many are spam?</p><p class="m">p(spam | free) = 30/35 ≈ 0.86</p></div>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>The two formulas behind it</h3>
+        <div class="formula">p(A | B) = <span class="frac"><span>p(A, B)</span><span>p(B)</span></span><small>Conditional = joint ÷ marginal</small></div>
+        <div class="formula">p(A, B) = p(A | B) · p(B)<small>The product rule. Check: 0.857 × 0.35 = 0.30 ✓</small></div>
+      </div>
+      <div class="card">
+        <h3>The classic beginner mistake</h3>
+        <p><span class="m">p(spam | free)</span> and <span class="m">p(free | spam)</span> are <b>different numbers</b>.</p>
+        <p>Spam given “free”: 30 out of 35 = <b>0.86</b>.<br>“Free” given spam: 30 out of 40 = <b>0.75</b>.</p>
+        <p>The order matters. What comes after the bar is the group you zoom into. Bayes' rule, next, is the tool that turns one into the other.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PART 4 -->
+  <section class="panel plain" id="p4">
+    <div class="head">
+      <span class="part-tag">Part 4 · 8 min</span>
+      <h2>Bayes' rule</h2>
+      <p class="lead">Write the product rule two ways. Both describe the same joint probability, so they are equal:</p>
+    </div>
+    <div class="formula">p(A | B) · p(B) = p(A, B) = p(B | A) · p(A)</div>
+    <div class="text"><p>Divide both sides by <span class="m">p(B)</span> and you have it:</p></div>
+    <div class="formula" style="background:var(--blue);color:var(--white)">p(A | B) = <span class="frac"><span>p(B | A) · p(A)</span><span>p(B)</span></span></div>
+    <div class="text">
+      <p>In the course, the letters change. <span class="m">θ</span> (“theta”) is the unknown thing you want to learn, like the share of water. <span class="m">D</span> is the data you saw. Each piece has a name, and the exam will ask for them:</p>
+    </div>
+    <div class="grid g4">
+      <div class="card grey"><span class="m" style="font-size:22px">p(θ | D)</span><h3>Posterior</h3><p class="note">Belief about θ after seeing the data.</p></div>
+      <div class="card grey"><span class="m" style="font-size:22px">p(D | θ)</span><h3>Likelihood</h3><p class="note">How probable the data is if θ were true.</p></div>
+      <div class="card grey"><span class="m" style="font-size:22px">p(θ)</span><h3>Prior</h3><p class="note">Belief about θ before the data.</p></div>
+      <div class="card grey"><span class="m" style="font-size:22px">p(D)</span><h3>Evidence</h3><p class="note">Just a number that makes everything add up to 1.</p></div>
+    </div>
+    <div class="card bluecard">
+      <h3>The trick you will use on every exam</h3>
+      <p>The evidence <span class="m">p(D)</span> does not depend on θ. So we often drop it and write “∝”, which means <b>“proportional to”</b>:</p>
+      <p class="m" style="font-size:26px">p(θ | D) ∝ p(D | θ) · p(θ)</p>
+      <p>Multiply the likelihood by the prior, look at the shape you get, and divide by the total at the very end.</p>
+    </div>
+  </section>
+
+  <section class="panel blue" aria-label="Medical test example">
+    <div class="head">
+      <span class="part-tag">Part 4 · example</span>
+      <h2>You test positive. How worried should you be?</h2>
+      <p class="lead">1% of people have a disease. The test catches 90% of sick people. It also wrongly says “positive” for 5% of healthy people. Most people guess 90%. Let's count instead.</p>
+    </div>
+    <div class="people">
+      <div class="card">
+        <span class="eyebrow" style="color:var(--ink-2)">Imagine 1000 people</span>
+        <div class="flow"><b>10 sick</b><span>90% test positive → <b style="font-size:inherit">9 positive</b></span></div>
+      </div>
+      <div class="card">
+        <span class="eyebrow" style="color:var(--ink-2)">The other 990</span>
+        <div class="flow"><b>990 healthy</b><span>5% test positive → <b style="font-size:inherit">about 50 positive</b></span></div>
+      </div>
+      <div class="card violet" style="justify-content:space-between">
+        <span class="bignum">15%</span>
+        <p>9 sick out of 59 positives. That is your real chance.</p>
+      </div>
+    </div>
+    <div class="card">
+      <h3>The same thing with Bayes' rule</h3>
+      <div class="formula">p(sick | +) = <span class="frac"><span>0.9 × 0.01</span><span>0.9 × 0.01 + 0.05 × 0.99</span></span> = <span class="frac"><span>0.009</span><span>0.0585</span></span> ≈ 0.15</div>
+      <p>The bottom line is <span class="m">p(+)</span>, found with the sum rule: positives from sick people plus positives from healthy people. The lesson: <b>the prior matters a lot</b>. When the disease is rare, most positive tests are false alarms.</p>
+    </div>
+  </section>
+
+  <!-- PART 5 -->
+  <section class="panel plain" id="p5">
+    <div class="head">
+      <span class="part-tag">Part 5 · 5 min</span>
+      <h2>Random variables and distributions</h2>
+    </div>
+    <div class="grid g2">
+      <div class="card grey">
+        <h3>Random variable</h3>
+        <p>A number whose value depends on chance. Example: <span class="m">X</span> = number of heads in 10 flips. A <b>distribution</b> says how likely each value is.</p>
+        <p><b>Discrete</b> (counts 0, 1, 2, …): <span class="m">p(x)</span> is a probability, and all values add up to 1.</p>
+        <p><b>Continuous</b> (any number, like height): <span class="m">p(x)</span> is a <i>density</i>. The area under the curve is the probability. The total area is 1.</p>
+      </div>
+      <div class="card grey">
+        <h3>Mean and variance</h3>
+        <p>The <b>mean</b> or expected value <span class="m">E[X]</span> is the long-run average. Flip a fair coin 10 times, again and again: on average you get 5 heads.</p>
+        <p>The <b>variance</b> measures spread: how far values usually land from the mean. Small variance means values stay close to the mean.</p>
+      </div>
+    </div>
+    <p class="note">The distributions you will meet in this course:</p>
+    <div class="tiles">
+      <div class="tile t-pink"><span class="lbl">one yes/no</span><h3>Bernoulli(θ)</h3><p>One coin flip. <span class="m">p(1) = θ</span>, <span class="m">p(0) = 1 − θ</span>. Is this one email spam?</p><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="url(#gr)" stroke-width="2"/><circle cx="12" cy="12" r="4.5" stroke="url(#gr)" stroke-width="1.6"/></svg></div>
+      <div class="tile t-ink"><span class="lbl">count of yes</span><h3>Binomial(n, θ)</h3><p>Number of heads in <span class="m">n</span> flips. Mean <span class="m">nθ</span>.</p><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" stroke="url(#grw)" stroke-width="2"/><circle cx="9" cy="9" r="1.4" fill="url(#grw)"/><circle cx="15" cy="15" r="1.4" fill="url(#grw)"/><circle cx="15" cy="9" r="1.4" fill="url(#grw)"/><circle cx="9" cy="15" r="1.4" fill="url(#grw)"/></svg></div>
+      <div class="tile t-blue"><span class="lbl">wait for success</span><h3>Geometric(q)</h3><p>Failures before the first success: <span class="m">p(k | q) = (1 − q)<sup>k</sup> q</span>. It was on both past finals.</p><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 18h3v-3h3v-3h3V9h3V6h4" stroke="url(#grw)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
+      <div class="tile t-grey"><span class="lbl">K-sided die</span><h3>Categorical / Multinomial</h3><p>Like a coin with K sides. Used for words in text and spam filters.</p><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 20 7.5v9L12 21l-8-4.5v-9z" stroke="url(#gr)" stroke-width="2" stroke-linejoin="round"/><path d="M4 7.5 12 12l8-4.5M12 12v9" stroke="url(#gr)" stroke-width="1.6"/></svg></div>
+      <div class="tile t-violet"><span class="lbl">tomorrow!</span><h3>Beta(a, b)</h3><p>A distribution for a probability itself, with values from 0 to 1. Your prior for a coin. Mean <span class="m">a/(a+b)</span>.</p><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 20c4 0 5-14 9-14 3 0 4 8 9 14" stroke="url(#grw)" stroke-width="2" stroke-linecap="round"/></svg></div>
+      <div class="tile t-wine"><span class="lbl">the bell curve</span><h3>Gaussian N(μ, σ²)</h3><p>Center <span class="m">μ</span>, width <span class="m">σ</span>. Comes back in classification and regression.</p><svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 19c3 0 4-12 9-12s6 12 9 12" stroke="url(#grw)" stroke-width="2" stroke-linecap="round"/></svg></div>
+    </div>
+  </section>
+
+  <!-- PART 6 -->
+  <section class="panel plain" id="p6">
+    <div class="head">
+      <span class="part-tag">Part 6 · 2 min</span>
+      <h2>Uncorrelated is not independent</h2>
+    </div>
+    <div class="xy">
+      <div class="card grey">
+        <p><b>Independent</b> means knowing X tells you nothing about Y: <span class="m">p(x, y) = p(x) · p(y)</span>.</p>
+        <p><b>Correlation</b> only measures a <i>straight-line</i> relationship.</p>
+        <p>Take <span class="m">X</span> uniform between −1 and 1, and <span class="m">Y = X²</span>. Y depends on X completely. But the U-shape is symmetric: X = −0.5 and X = 0.5 give the same Y, so the left and right sides cancel and the correlation is <b>0</b>.</p>
+        <p>So “uncorrelated means independent” is <b>false</b>. This was a true/false question on the 2026 final. The other direction is true: independent always means uncorrelated.</p>
+      </div>
+      <div class="card">
+        <svg viewBox="0 0 320 220" role="img" aria-label="Points on the curve y equals x squared, for x from minus 1 to 1">
+          <line x1="20" y1="190" x2="300" y2="190" stroke="#c7ccd8" stroke-width="1.5"/>
+          <line x1="160" y1="20" x2="160" y2="200" stroke="#c7ccd8" stroke-width="1.5"/>
+          <path id="parab" d="M30 40 Q160 340 290 40" fill="none" stroke="url(#gr)" stroke-width="4" stroke-linecap="round"/>
+          <g fill="#2451ff" id="dots"></g>
+          <text x="296" y="208" font-size="13" fill="#4b5060" text-anchor="end" font-family="Onest, sans-serif">X</text>
+          <text x="168" y="30" font-size="13" fill="#4b5060" font-family="Onest, sans-serif">Y = X²</text>
+          <text x="30" y="208" font-size="12" fill="#4b5060" text-anchor="middle" font-family="Onest, sans-serif">−1</text>
+          <text x="290" y="208" font-size="12" fill="#4b5060" text-anchor="middle" font-family="Onest, sans-serif">1</text>
+        </svg>
+        <p class="note">Strong dependence, zero correlation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PART 7 -->
+  <section class="panel blue" id="p7">
+    <div class="head">
+      <span class="part-tag">Part 7 · 7 min</span>
+      <h2>The Bayesian recipe, with the globe</h2>
+      <p class="lead">Let <span class="m">p</span> be the share of water. Like in the lecture, pretend <span class="m">p</span> can only be 0, 0.25, 0.5, 0.75 or 1. Before any data, all five are equally likely: that is our prior.</p>
+    </div>
+    <div class="grid g3">
+      <div class="card"><span class="eyebrow" style="color:var(--ink-2)">Step 1 · data</span><h3>W, L, W</h3><p>Three tosses: water, land, water.</p></div>
+      <div class="card"><span class="eyebrow" style="color:var(--ink-2)">Step 2 · likelihood</span><h3 class="m" style="font-size:24px">p × (1−p) × p</h3><p>Water has probability <span class="m">p</span>, land has <span class="m">1−p</span>. Multiply for each toss.</p></div>
+      <div class="card"><span class="eyebrow" style="color:var(--ink-2)">Step 3 · posterior</span><h3>Multiply, then normalize</h3><p>Likelihood × prior for each value, then divide by the total so it all adds up to 1.</p></div>
+    </div>
+    <div class="card">
+      <div class="widget">
+        <div>
+          <h3>Try it: add tosses and watch the belief move</h3>
+          <div class="bars" id="bars" aria-live="polite"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="controls">
+            <button class="b-water" id="addW" type="button">+ Water</button>
+            <button class="b-land" id="addL" type="button">+ Land</button>
+            <button class="b-reset" id="reset" type="button">Reset to W L W</button>
+          </div>
+          <div class="datarow" id="data"></div>
+          <div class="readout" id="readout"></div>
+          <p class="note">The value 0 dies as soon as you see one W. The value 1 dies as soon as you see one L. More data makes the bars sharper.</p>
+        </div>
+      </div>
+    </div>
+    <div class="grid g3">
+      <div class="card"><h3>MLE</h3><p><b>Maximum likelihood</b>: the value that makes the data most probable. It ignores the prior. For W L W it is 0.75 among our five values. If every value from 0 to 1 is allowed, it is <span class="m">2/3</span>, the share of W.</p></div>
+      <div class="card"><h3>MAP</h3><p><b>Maximum a posteriori</b>: the peak of the posterior. With a flat prior it equals the MLE. With a different prior it can move.</p></div>
+      <div class="card"><h3>Posterior mean</h3><p>The average over the posterior: 0.25·0.15 + 0.5·0.40 + 0.75·0.45 ≈ <b>0.58</b>. It uses the whole belief, not only the peak.</p></div>
+    </div>
+    <div class="card violet">
+      <h3>Tomorrow, the same idea with all values</h3>
+      <p>The Beta-Binomial model lets <span class="m">p</span> be <i>any</i> number between 0 and 1. The prior becomes a Beta(a, b) curve. After k waters in n tosses, the posterior is again a Beta: <span class="m">Beta(a + k, b + n − k)</span>. You add the counts. That is the whole first chapter.</p>
+    </div>
+  </section>
+
+  <!-- PART 8 -->
+  <section class="panel plain" id="p8">
+    <div class="head">
+      <span class="part-tag">Part 8 · 4 min</span>
+      <h2>Check yourself</h2>
+      <p class="lead" style="color:var(--ink-2)">Try each one on paper first, then open the answer.</p>
+    </div>
+    <div class="quiz">
+      <details><summary>1. From the email table: what is p(not spam | no “free”)?</summary><div class="ans"><p>Zoom into the “no free” column: 65 emails. 55 of them are not spam. So <span class="m">55/65 ≈ 0.85</span>.</p></div></details>
+      <details><summary>2. Is p(free | spam) the same as p(spam | free)?</summary><div class="ans"><p>No. <span class="m">p(free | spam) = 30/40 = 0.75</span> but <span class="m">p(spam | free) = 30/35 ≈ 0.86</span>. The group after the bar is different.</p></div></details>
+      <details><summary>3. Same test, but now 10% of people have the disease. p(sick | positive)?</summary><div class="ans"><p>1000 people: 100 sick → 90 positive. 900 healthy → 5% = 45 positive. So <span class="m">90 / (90 + 45) ≈ 0.67</span>. The prior went up, so the posterior went up a lot.</p></div></details>
+      <details><summary>4. True or false: if X and Y are uncorrelated, they are independent.</summary><div class="ans"><p>False. Counterexample: X uniform on (−1, 1) and Y = X². They are uncorrelated, but Y is completely determined by X.</p></div></details>
+      <details><summary>5. Globe data W, W, W with the flat prior. What is the posterior?</summary><div class="ans"><p>Likelihood is <span class="m">p³</span>: 0, 0.016, 0.125, 0.42, 1. The total is 1.5625. Divide: <b>0, 0.01, 0.08, 0.27, 0.64</b>. Click “+ Water” three times after a reset to check. Note how sure the posterior gets about p = 1 after only 3 tosses. Tomorrow's priors help with that.</p></div></details>
+    </div>
+  </section>
+
+  <!-- GLOSSARY -->
+  <section class="panel black" aria-label="Words to remember">
+    <div class="head"><span class="part-tag">Keep this</span><h2>Words to remember</h2></div>
+    <div class="gloss">
+      <div><b>Joint p(A, B)</b><span>A and B both happen.</span></div>
+      <div><b>Marginal p(A)</b><span>Add up over the other variable.</span></div>
+      <div><b>Conditional p(A | B)</b><span>A, when we already know B.</span></div>
+      <div><b>Prior p(θ)</b><span>Belief before the data.</span></div>
+      <div><b>Likelihood p(D | θ)</b><span>How well θ explains the data.</span></div>
+      <div><b>Posterior p(θ | D)</b><span>Belief after the data.</span></div>
+      <div><b>∝ proportional to</b><span>Equal up to a constant you fix at the end.</span></div>
+      <div><b>MLE</b><span>The θ that makes the data most likely.</span></div>
+      <div><b>MAP</b><span>The peak of the posterior.</span></div>
+    </div>
+  </section>
+
+  <section class="panel blue">
+    <div class="end">
+      <h2>That's it for today.</h2>
+      <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start;max-width:44ch">
+        <p class="lead">Before you close this page, write three things from memory: Bayes' rule, the meaning of the bar “|”, and “posterior ∝ likelihood × prior”.</p>
+        <a class="cta" href="https://claude.ai/artifact/NZrJaocvTmwepZpvVhAn8j">Open the study plan →</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// parabola dots
+(function(){
+  const g=document.getElementById("dots");
+  for(let i=0;i<=16;i++){
+    const x=-1+i/8, px=30+(x+1)*130, py=190-(x*x)*150;
+    const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("cx",px.toFixed(1));c.setAttribute("cy",py.toFixed(1));c.setAttribute("r","4.5");
+    g.appendChild(c);
+  }
+})();
+// globe toy
+(function(){
+  const P=[0,.25,.5,.75,1];
+  let data=["W","L","W"];
+  const bars=document.getElementById("bars"),dataEl=document.getElementById("data"),out=document.getElementById("readout");
+  bars.innerHTML=P.map((p,i)=>`<div class="barcol"><span class="barval" id="v${i}"></span><div class="barfill" id="f${i}"></div><span class="barx">p = ${p}</span></div>`).join("");
+  function render(){
+    const w=data.filter(x=>x==="W").length,l=data.length-w;
+    const lik=P.map(p=>Math.pow(p,w)*Math.pow(1-p,l));
+    const tot=lik.reduce((a,b)=>a+b,0);
+    const post=lik.map(x=>x/tot);
+    const max=Math.max(...post);
+    post.forEach((q,i)=>{
+      const f=document.getElementById("f"+i);
+      f.style.height=Math.max(1.5,q/max*100)+"%";
+      f.classList.toggle("top",q===max);
+      document.getElementById("v"+i).textContent=q.toFixed(2);
+    });
+    dataEl.innerHTML=data.length?data.map(x=>`<span class="tok ${x}">${x}</span>`).join(""):'<span class="note">No data yet: the posterior equals the flat prior.</span>';
+    const best=P[post.indexOf(max)];
+    const mean=post.reduce((a,q,i)=>a+q*P[i],0);
+    out.innerHTML=`<span>Data: <b>${w} water, ${l} land</b></span><span>Peak of the posterior (MAP): <b>p = ${best}</b></span><span>Posterior mean: <b>${mean.toFixed(2)}</b></span>`;
+  }
+  document.getElementById("addW").onclick=()=>{if(data.length<30){data.push("W");render()}};
+  document.getElementById("addL").onclick=()=>{if(data.length<30){data.push("L");render()}};
+  document.getElementById("reset").onclick=()=>{data=["W","L","W"];render()};
+  render();
+})();
+</script>
+</body>
+</html>
