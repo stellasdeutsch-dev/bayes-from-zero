@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="A 35-minute plain-English warm-up on probability and Bayes' rule, explained with CS2 and Dota 2.">
+<meta name="description" content="A 35-minute plain-English warm-up on probability and Bayes' rule, with a toy, self-checks and practice problems.">
 <style>[hidden]{display:none!important}img{max-width:100%}</style>
 <title>Bayes From Zero</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -169,6 +169,24 @@ details .ans{margin-top:14px;display:flex;flex-direction:column;gap:8px;max-widt
 .end{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
 .end h2{max-width:14ch}
 .cta{display:inline-flex;gap:8px;align-items:center;background:var(--white);color:var(--blue);font-weight:700;padding:16px 24px;border-radius:99px;text-decoration:none;font-size:17px}
+/* practice */
+.probs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.prob{display:flex;flex-direction:column;gap:12px;min-width:0}
+.prob-top{display:flex;align-items:center;gap:10px}
+.prob-n{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px;flex-shrink:0}
+.lvl{font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px}
+.steps-l{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.prob .m{white-space:normal}
+@media (max-width:900px){.probs{grid-template-columns:1fr}}
+.prob{background:var(--grey);border-radius:var(--r-l);padding:clamp(18px,3vw,26px)}
+.prob-n{background:var(--blue);color:var(--white)}
+.lvl{background:var(--white)}
+.lvl-easy{color:#1d7a46}.lvl-med{color:var(--blue-deep)}.lvl-exam{color:var(--violet-2)}.lvl-hard{color:var(--wine)}
+.prob details{background:var(--white);padding:14px 16px}
+.prob summary{font-size:16px}
+.prob summary::after{content:"Show"}
+.prob details[open] summary::after{content:"Hide"}
+.prob .tablebox table{min-width:360px}
 
 @media (max-width:900px){
   .hero,.widget,.people,.xy{grid-template-columns:1fr}
@@ -533,6 +551,61 @@ details .ans{margin-top:14px;display:flex;flex-direction:column;gap:8px;max-widt
       <div><b>∝ proportional to</b><span>Equal up to a constant you fix at the end.</span></div>
       <div><b>MLE</b><span>The θ that makes the data most likely.</span></div>
       <div><b>MAP</b><span>The peak of the posterior.</span></div>
+    </div>
+  </section>
+
+  <!-- PRACTICE -->
+  <section class="panel plain" id="practice">
+    <div class="head">
+      <span class="part-tag">Practice · 30–40 min</span>
+      <h2>Practice problems</h2>
+      <p class="lead" style="color:var(--ink-2)">Exam-style tasks, now with Dota. Write the full solution on paper, then open the hint only if you are stuck, and the solution at the end.</p>
+    </div>
+    <div class="probs">
+      <article class="prob">
+        <div class="prob-top"><span class="prob-n">1</span><span class="lvl lvl-easy">Easy</span></div>
+        <h3>Carry picks and wins</h3>
+        <p>You played 200 Dota games and wrote down two things:</p>
+        <div class="tablebox"><table><thead><tr><th></th><th>won</th><th>lost</th><th>total</th></tr></thead><tbody><tr><td>you picked a carry</td><td>60</td><td>40</td><td>100</td></tr><tr><td>other role</td><td>45</td><td>55</td><td>100</td></tr><tr class="total"><td>total</td><td>105</td><td>95</td><td>200</td></tr></tbody></table></div>
+        <p>Find (a) <span class="m">p(win)</span>, (b) <span class="m">p(win | carry)</span>, (c) <span class="m">p(carry | win)</span>. (d) Are “carry” and “win” independent?</p>
+        <details><summary>Hint</summary><div class="ans"><p>For a conditional, zoom into the group after the bar and count inside it. Independent means <span class="m">p(win | carry) = p(win)</span>.</p></div></details>
+        <details><summary>Solution</summary><div class="ans"><ul class="steps-l"><li>(a) <span class="m">105/200 = 0.525</span></li><li>(b) carry row: <span class="m">60/100 = 0.60</span></li><li>(c) won column: <span class="m">60/105 ≈ 0.571</span></li><li>(d) <span class="m">0.60 ≠ 0.525</span>, so they are <b>not</b> independent: picking a carry changes your win chance.</li></ul></div></details>
+      </article>
+      <article class="prob">
+        <div class="prob-top"><span class="prob-n">2</span><span class="lvl lvl-med">Medium</span></div>
+        <h3>Smurf detector</h3>
+        <p>In your rank, 5% of accounts are smurfs. A detector flags 80% of smurfs, but it also flags 10% of normal accounts. (a) A player is flagged. What is <span class="m">p(smurf | flag)</span>? (b) A second, independent detector with the same rates also flags them. What is the probability now?</p>
+        <details><summary>Hint</summary><div class="ans"><p>Imagine 1000 accounts, or use Bayes' rule with the sum rule in the bottom line. For (b), both flags together have likelihood <span class="m">0.8²</span> for smurfs and <span class="m">0.1²</span> for normal accounts.</p></div></details>
+        <details><summary>Solution</summary><div class="ans"><ul class="steps-l"><li>(a) <span class="m">0.8·0.05 / (0.8·0.05 + 0.1·0.95) = 0.04 / 0.135 ≈ 0.30</span></li><li>(b) <span class="m">0.64·0.05 / (0.64·0.05 + 0.01·0.95) = 0.032 / 0.0415 ≈ 0.77</span></li><li>Lesson: one flag is weak evidence when smurfs are rare. Two independent flags change the picture a lot.</li></ul></div></details>
+      </article>
+      <article class="prob">
+        <div class="prob-top"><span class="prob-n">3</span><span class="lvl lvl-med">Medium</span></div>
+        <h3>Bounty rune and the mid lane</h3>
+        <p>You get the first bounty rune with probability 0.6. If you get it, you win the mid lane with probability 0.7; if not, with probability 0.4. (a) What is <span class="m">p(win lane)</span>? (b) You won the lane. What is the probability that you had the rune?</p>
+        <details><summary>Hint</summary><div class="ans"><p>(a) is the sum rule: split by “rune” and “no rune”. (b) is Bayes' rule with the answer of (a) in the bottom line.</p></div></details>
+        <details><summary>Solution</summary><div class="ans"><ul class="steps-l"><li>(a) <span class="m">0.7·0.6 + 0.4·0.4 = 0.42 + 0.16 = 0.58</span></li><li>(b) <span class="m">0.42 / 0.58 ≈ 0.72</span></li></ul></div></details>
+      </article>
+      <article class="prob">
+        <div class="prob-top"><span class="prob-n">4</span><span class="lvl lvl-exam">Exam-style</span></div>
+        <h3>Posterior on a grid with a real prior</h3>
+        <p>A new Mirana player's arrow hit rate <span class="m">p</span> is 0.25, 0.5 or 0.75, with prior 0.2, 0.5, 0.3. You see: hit, hit, miss. (a) Compute the posterior. (b) Give the MLE and the MAP among the three values. (c) What is the probability that the <i>next</i> arrow hits?</p>
+        <details><summary>Hint</summary><div class="ans"><p>Likelihood is <span class="m">p²(1 − p)</span>. Multiply by the prior, then divide by the total. For (c), average <span class="m">p</span> over the posterior.</p></div></details>
+        <details><summary>Solution</summary><div class="ans"><ul class="steps-l"><li>Likelihood: 0.0469, 0.125, 0.1406. Times prior: 0.0094, 0.0625, 0.0422. Total 0.1141.</li><li>(a) Posterior: <b>0.08, 0.55, 0.37</b></li><li>(b) MLE = 0.75 (largest likelihood). MAP = 0.5 (largest posterior). The prior pulled the answer down.</li><li>(c) <span class="m">0.25·0.08 + 0.5·0.55 + 0.75·0.37 ≈ 0.57</span>. This is the posterior predictive.</li></ul></div></details>
+      </article>
+      <article class="prob">
+        <div class="prob-top"><span class="prob-n">5</span><span class="lvl lvl-exam">Exam-style</span></div>
+        <h3>True or false, with a reason</h3>
+        <p>(a) If <span class="m">p(A | B) = p(A)</span>, then also <span class="m">p(B | A) = p(B)</span>. (b) <span class="m">p(win | first blood)</span> and <span class="m">p(first blood | win)</span> are always equal. (c) The posterior is fully described by the two numbers MLE and MAP.</p>
+        <details><summary>Hint</summary><div class="ans"><p>For (a), plug <span class="m">p(A | B) = p(A)</span> into Bayes' rule for <span class="m">p(B | A)</span>.</p></div></details>
+        <details><summary>Solution</summary><div class="ans"><ul class="steps-l"><li>(a) <b>True.</b> <span class="m">p(B | A) = p(A | B)p(B)/p(A) = p(A)p(B)/p(A) = p(B)</span>. Independence goes both ways.</li><li>(b) <b>False.</b> They are equal only if <span class="m">p(win) = p(first blood)</span>; in Part 3 the two directions gave 0.86 and 0.75.</li><li>(c) <b>False.</b> Two numbers cannot fix a whole distribution. This was a 2026 final question.</li></ul></div></details>
+      </article>
+      <article class="prob">
+        <div class="prob-top"><span class="prob-n">6</span><span class="lvl lvl-hard">Challenge</span></div>
+        <h3>Watch the posterior move</h3>
+        <p>Use the toy in Part 7 (it works for any yes/no data). Start from “Clear” each time. What posterior does p = 0.5 get after H B, after H H B B, and after H H H B B B? Explain what more data does to the bars.</p>
+        <details><summary>Hint</summary><div class="ans"><p>All three have the same share of hits. Compare how tall the 0.5 bar is in each case.</p></div></details>
+        <details><summary>Solution</summary><div class="ans"><p>All three have MLE 0.5, but the posterior for 0.5 grows: 0.40 → 0.47 → 0.54, while 0.25 and 0.75 shrink (check in the toy). The likelihood <span class="m">p<sup>k</sup>(1 − p)<sup>n−k</sup></span> gets sharper as n grows, so more data means more certainty, even with the same share.</p></div></details>
+      </article>
     </div>
   </section>
 
